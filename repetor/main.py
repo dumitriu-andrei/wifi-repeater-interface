@@ -1,5 +1,4 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QLineEdit, QMessageBox
 from PyQt5 import QtWidgets,QtGui
 from PyQt5.QtWidgets import *
 import serial.tools.list_ports
@@ -114,9 +113,9 @@ class App(QMainWindow):
         self.button2.resize(50,30)
 
         #SCAN
-        self.labelID = QtWidgets.QLabel(self)
-        self.labelID.setText("Scan for WiFi:")
-        self.labelID.move(40, 234)
+        self.labelScan = QtWidgets.QLabel(self)
+        self.labelScan.setText("Scan for WiFi:")
+        self.labelScan.move(40, 234)
 
         self.comboWifi = QComboBox(self)
         self.comboWifi.move(40, 300)
@@ -129,6 +128,14 @@ class App(QMainWindow):
         self.buttonScanOk = QPushButton('OK', self)
         self.buttonScanOk.move(200, 300)
         self.buttonScanOk.resize(50, 25)
+
+        self.labelReset = QtWidgets.QLabel(self)
+        self.labelReset.setText("Factory Reset: ")
+        self.labelReset.move(400, 234)
+
+        self.buttonReset = QPushButton('RESET', self)
+        self.buttonReset.move(400, 260)
+        self.buttonReset.resize(50, 30)
 
 
 
@@ -150,6 +157,9 @@ class App(QMainWindow):
 
         self.buttonScanOk.clicked.connect(self.scanOk_click)
         self.buttonScanOk.setEnabled(False)
+        self.show()
+
+        self.buttonReset.clicked.connect(self.reset_click)
         self.show()
 
 
@@ -322,6 +332,50 @@ class App(QMainWindow):
         text = l[1]
 
         self.textbox1_1.setText(text)
+
+    def reset_click(self):
+        ser = serial.Serial()
+        ser.baudrate = 115200
+        ser.port = self.comboPorts.currentText()
+        ser.timeout = .1
+
+        try:
+            ser.open()
+        except:
+            QMessageBox.about(self, "ERROR", "Make sure you have entered a valid PORT!")
+        else:
+            time.sleep(5)
+
+            ser.write(("reset factory").encode() + b'\x0d' + b'\x0a')
+            time.sleep(2)
+
+            ser.close()
+
+    def show_click(self):
+        ser = serial.Serial()
+        ser.baudrate = 115200
+        ser.timeout = 5
+
+        try:
+            ser.open()
+        except:
+            QMessageBox.about(self, "ERROR", "Make sure you have entered a valid PORT!")
+        else:
+            time.sleep(5)
+
+            ser.write(("show").encode() + b'\x0d' + b'\x0a')
+            time.sleep(5)
+            text = ser.read_all()
+            text = text.decode('utf-8','ignore')
+
+            sep = 'CMD'
+            text = text.split(sep)[0]
+
+            print(text)
+
+            ser.close()
+
+
 
 
 
