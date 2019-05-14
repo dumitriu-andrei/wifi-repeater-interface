@@ -129,6 +129,7 @@ class App(QMainWindow):
         self.buttonScanOk.move(200, 300)
         self.buttonScanOk.resize(50, 25)
 
+        #RESET
         self.labelReset = QtWidgets.QLabel(self)
         self.labelReset.setText("Factory Reset: ")
         self.labelReset.move(400, 234)
@@ -137,6 +138,14 @@ class App(QMainWindow):
         self.buttonReset.move(400, 260)
         self.buttonReset.resize(50, 30)
 
+        #BOARD INFO
+        self.labelShow = QtWidgets.QLabel(self)
+        self.labelShow.setText("Board Info: ")
+        self.labelShow.move(500, 234)
+
+        self.buttonShow = QPushButton('SHOW', self)
+        self.buttonShow.move(500, 260)
+        self.buttonShow.resize(50, 30)
 
 
 
@@ -162,6 +171,8 @@ class App(QMainWindow):
         self.buttonReset.clicked.connect(self.reset_click)
         self.show()
 
+        self.buttonShow.clicked.connect(self.show_click)
+        self.show()
 
     #SET button
     def b1_click(self):
@@ -290,7 +301,7 @@ class App(QMainWindow):
         ser = serial.Serial()
         ser.baudrate = 115200
         ser.port = self.comboPorts.currentText()
-        ser.timeout = 5
+        ser.timeout = 10
         self.comboWifi.clear()
 
         try:
@@ -299,16 +310,16 @@ class App(QMainWindow):
             QMessageBox.about(self, "ERROR", "Make sure you have entered a valid PORT!")
         else:
             time.sleep(5)
-
+            print("hey")
             ser.write(("scan").encode() + b'\x0d' + b'\x0a')
             time.sleep(5)
             text = ser.read_all()
             text = text.decode('utf-8','ignore')
-
+            print("hey")
             sep = 'scandone'
             wifi = text.split(sep)[2]
             wifi=wifi[:-4]
-
+            print("hey")
             wifi = wifi.split(",")
             i=1
 
@@ -354,7 +365,8 @@ class App(QMainWindow):
     def show_click(self):
         ser = serial.Serial()
         ser.baudrate = 115200
-        ser.timeout = 5
+        ser.port = self.comboPorts.currentText()
+        ser.timeout = .5
 
         try:
             ser.open()
@@ -368,12 +380,15 @@ class App(QMainWindow):
             text = ser.read_all()
             text = text.decode('utf-8','ignore')
 
-            sep = 'CMD'
-            text = text.split(sep)[0]
+            sep = 'show'
+            text = text.split(sep)[1]
+            text = text.split('CMD')[0]
+
+            QMessageBox.about(self, "Board Info", text)
 
             print(text)
 
-            ser.close()
+
 
 
 
